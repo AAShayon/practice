@@ -19,32 +19,36 @@ class MyApp extends StatelessWidget {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.blue,
     ));
-    return ScreenUtilInit(
-      designSize: const Size(380, 800),
-      minTextAdapt: true,
-        splitScreenMode: true,
-      builder: (context,child){
-        return MultiProvider(providers: [
-          ChangeNotifierProvider(create: (context)=>ProductViewModel())
-        ],child: StreamProvider<InternetConnectionStatus>(create: (_){
-          return InternetConnectionChecker().onStatusChange;
-        }, initialData: InternetConnectionStatus.connected),builder: (context ,child){
-          return MaterialApp(
-            title: 'E-Commerce DummyJson',
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              textTheme:GoogleFonts.abelTextTheme(),
-              appBarTheme: AppBarTheme(
-                centerTitle: true,
-                backgroundColor: Colors.grey.withOpacity(.8),
-              ),
-              scaffoldBackgroundColor: Colors.blue.withOpacity(.9),
-              primaryTextTheme: GoogleFonts.abelTextTheme(),
-            ),
-            home:const ProductsScreen(),
-          );
-        },);
-      },
-    );
+     return ScreenUtilInit(
+       splitScreenMode: true,
+       designSize: const Size(380,800),
+       minTextAdapt: true,
+       builder: (context,child){
+         return MultiProvider(
+           providers: [
+             ChangeNotifierProvider(create: (context)=>ProductViewModel())
+           ],
+           child: StreamProvider<InternetConnectionStatus>(
+               create: (_){
+                 return InternetConnectionChecker().onStatusChange;
+               }, initialData: InternetConnectionStatus.connected,
+           child: MaterialApp(
+             title: 'E-Commerce DummyJson',
+             debugShowCheckedModeBanner: false,
+             theme: ThemeData(
+               textTheme:GoogleFonts.abelTextTheme(),
+               appBarTheme: AppBarTheme(
+                 centerTitle: true,
+                 backgroundColor: Colors.grey.withOpacity(.8),
+               ),
+               scaffoldBackgroundColor: Colors.blue.withOpacity(.9),
+               primaryTextTheme: GoogleFonts.abelTextTheme(),
+             ),
+             home:const ProductsScreen(),
+           ),
+           ),
+         );
+       },
+     );
   }
 }

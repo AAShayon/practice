@@ -1,7 +1,9 @@
 
 import 'package:e_commerce_dummy_json/modules/viewModel/product_view_model.dart';
+import 'package:e_commerce_dummy_json/view/widgets/no_internet_connection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 class ProductsScreen extends StatefulWidget {
@@ -28,7 +30,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   Future<void> _loadData(BuildContext context, {required bool isRefresh, required bool isLoadMore}) async {
     final productsViewModel = Provider.of<ProductViewModel>(context, listen: false);
-    await productsViewModel.getProductList(context, isLoadMore: isLoadMore);
+    await productsViewModel.getAllProducts(context, isLoadMore: isLoadMore);
   }
 
   void _scrollListener() {
@@ -42,49 +44,54 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: ()async{
-        final product=Provider.of<ProductViewModel>(context,listen: false);
-        setState(() {
- product.clearList();
- product.resetLimit();
-        });
-        await  _loadData(context, isRefresh: true, isLoadMore: false);
-        Future<void>.delayed(const Duration(seconds: 2));
+    return Consumer<ProductViewModel>(
+      builder: (context,productViewModel,child) {
+        final products=productViewModel.products;
+        return RefreshIndicator(
+          onRefresh: ()async{
+            final product=Provider.of<ProductViewModel>(context,listen: false);
+            setState(() {
+         product.clearList();
+         product.resetLimit();
+            });
+            await  _loadData(context, isRefresh: true, isLoadMore: false);
+            Future<void>.delayed(const Duration(seconds: 2));
 
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('E-commerce Dummy', style: Theme.of(context).textTheme.labelMedium),
-        ),
-        body: Consumer<ProductViewModel>(
-          builder: (context, productViewModel, Widget? child) {
-            final products = productViewModel.products;
-            return ListView(
-                controller: scrollController,
-              shrinkWrap: true,
-              physics: AlwaysScrollableScrollPhysics(),
-              children:[ products.isNotEmpty
-                  ? ListView.builder(
-                physics:  NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: products.length,
-                itemBuilder: (context, index) {
-                  final product = products[index];
-                  return ListTile(
-                    leading: Text('${index + 1}'),
-                    title: Text('${product.title}'),
-                  );
-                },
-              )
-                  : const Center(child: CircularProgressIndicator()),
-              SizedBox(height: 30.h),
-                productViewModel.isLoading ? const Center(child: CircularProgressIndicator(),):SizedBox.shrink(),
-              ]
-            );
           },
-        ),
-      ),
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text('E-commerce Dummy', style: Theme.of(context).textTheme.labelMedium),
+            ),
+            body:Provider.of<InternetConnectionStatus>(context) == InternetConnectionStatus.disconnected?  NoInternetWidget(
+              onPressed: ()async{
+                _loadData(context, isRefresh: true, isLoadMore: false);
+              },
+            ):ListView(
+                    controller: scrollController,
+                  shrinkWrap: true,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  children:[ products.isNotEmpty
+                      ? ListView.builder(
+                    physics:  NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      return ListTile(
+                        leading: Text('${index + 1}'),
+                        title: Text('${product.title}'),
+
+                      );
+                    },
+                  )
+                      : const Center(child: CircularProgressIndicator()),
+                  SizedBox(height: 30.h),
+                    productViewModel.isLoading ? const Center(child: CircularProgressIndicator(),):SizedBox.shrink(),
+                  ]
+                )
+          ),
+        );
+      }
     );
   }
 }
