@@ -79,7 +79,36 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       final product = products[index];
                       return ListTile(
                         leading: Text('${index + 1}'),
-                        title: Text('${product.title}'),
+                        title: productViewModel.getTotalItem(index) > 0 ?Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            IconButton(onPressed: (){
+                              productViewModel.decrementItemCounts(index);
+                            }, icon: Icon(Icons.remove)),
+                            Text('${productViewModel.getTotalItem(index)}'),
+                            IconButton(onPressed: productViewModel.getTotalItem(index) <5?
+                            ()async{
+                              productViewModel.incrementItemCounts(index);
+                              if(productViewModel.getTotalItem(index)==5){
+                                return showDialog(context: context, builder: (context){
+                                  return AlertDialog(
+                                    title: Text("Exceed"),
+                                  );
+                                });
+                              }
+                            }:null
+                                , icon: Icon(Icons.add))
+                          ],
+                        ) : InkWell(
+                            child: Padding(
+                              padding:  EdgeInsets.symmetric(vertical: 5.h,horizontal: 8.w),
+                              child: const Text('Add To Cart'),
+                            ),
+                          onTap: (){
+                              productViewModel.incrementItemCounts(index);
+                          },
+                        ),
 
                       );
                     },
